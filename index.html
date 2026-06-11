@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agro Forte - Futuro Sustentável</title>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(#87CEEB,#90EE90);
+}
+
+#game{
+    width:100vw;
+    height:100vh;
+    position:relative;
+}
+
+#tractor{
+    position:absolute;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:50px;
+}
+
+.item{
+    position:absolute;
+    font-size:35px;
+}
+
+#info{
+    position:absolute;
+    top:10px;
+    left:10px;
+    font-size:24px;
+    font-weight:bold;
+    color:#004d00;
+}
+
+#message{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:40px;
+    color:#006400;
+    display:none;
+    text-align:center;
+}
+</style>
+</head>
+<body>
+
+<div id="game">
+    <div id="info">
+        Pontos: <span id="score">0</span>
+        | Energia Verde: <span id="energy">100</span>
+    </div>
+
+    <div id="tractor">🚜</div>
+    <div id="message"></div>
+</div>
+
+<script>
+const tractor = document.getElementById("tractor");
+const game = document.getElementById("game");
+const scoreText = document.getElementById("score");
+const energyText = document.getElementById("energy");
+const message = document.getElementById("message");
+
+let score = 0;
+let energy = 100;
+let tractorX = window.innerWidth / 2;
+
+document.addEventListener("keydown", (e) => {
+    if(e.key === "ArrowLeft"){
+        tractorX -= 30;
+    }
+    if(e.key === "ArrowRight"){
+        tractorX += 30;
+    }
+
+    tractorX = Math.max(0, Math.min(window.innerWidth - 60, tractorX));
+    tractor.style.left = tractorX + "px";
+});
+
+function createItem(){
+    const item = document.createElement("div");
+    item.classList.add("item");
+
+    const sustainable = Math.random() > 0.3;
+
+    item.textContent = sustainable ? "🌱" : "☁️";
+
+    item.style.left = Math.random() * (window.innerWidth - 40) + "px";
+    item.style.top = "-40px";
+
+    game.appendChild(item);
+
+    let y = -40;
+
+    const fall = setInterval(() => {
+        y += 5;
+        item.style.top = y + "px";
+
+        const itemRect = item.getBoundingClientRect();
+        const tractorRect = tractor.getBoundingClientRect();
+
+        if(
+            itemRect.bottom > tractorRect.top &&
+            itemRect.left < tractorRect.right &&
+            itemRect.right > tractorRect.left
+        ){
+            if(sustainable){
+                score += 10;
+                scoreText.textContent = score;
+            }else{
+                energy -= 20;
+                energyText.textContent = energy;
+            }
+
+            item.remove();
+            clearInterval(fall);
+        }
+
+        if(y > window.innerHeight){
+            item.remove();
+            clearInterval(fall);
+        }
+
+        if(energy <= 0){
+            gameOver();
+        }
+
+        if(score >= 200){
+            victory();
+        }
+
+    }, 30);
+}
+
+function gameOver(){
+    message.style.display = "block";
+    message.innerHTML = "☁️ Muita poluição!<br>Fim de Jogo";
+    clearInterval(spawn);
+}
+
+function victory(){
+    message.style.display = "block";
+    message.innerHTML = "🌱 Parabéns!<br>Você construiu um Agro Forte e Sustentável!";
+    clearInterval(spawn);
+}
+
+const spawn = setInterval(createItem, 1000);
+</script>
+
+</body>
+</html>
